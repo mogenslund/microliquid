@@ -68,9 +68,14 @@
     (or (= ar '(1))
         (= ar '(1 1))))))
 
+(defn previous-buffer
+  []
+  (switch-to-buffer (-> @editor ::buffers second ::buffer/name)))
+
 (defn handle-input
   [ch]
-  (let [action ((buffer/get-keymap (current-buffer)) ch)]
+  (let [action (or ((buffer/get-keymap (current-buffer)) ch)
+                   ((@editor ::global-keymap) ch))]
     (if action
       (if (one-arg? action)
         (apply-to-slider action)
