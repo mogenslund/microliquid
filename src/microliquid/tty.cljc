@@ -59,13 +59,23 @@
                         (tty-print ch))
                       (tty-print "\r\n"))
                     (tty-print esc (+ ((sc :cursor) :row) 1) ";" (+ ((sc :cursor) :column) 1) "H" esc "s"))
-                  (recur (.read r)))))
-            (set-line-mode
-             (do (Thread/sleep 500) (System/exit 0))))
+                  (recur (.read r))))
+              (set-line-mode)
+              (Thread/sleep 500)
+              (System/exit 0)))
      :cljs (js/process.stdin.on "keypress"
              (fn [chunk key]
                (when (= js/key.name "0") (js/process.exit))
-               (editor/handle-input (keyword js/key.name))))))
+               (editor/handle-input js/key.name)
+               (let [sc (renderer/render-screen)]
+                 (tty-print esc "0;37m" esc "2J")
+                 (tty-print esc 0 ";" 0 "H" esc "s")
+                 (doseq [line (sc :lines)]
+                   (doseq [ch line]
+                     (tty-print ch))
+                   (tty-print "\r\n"))
+                 (tty-print esc (+ ((sc :cursor) :row) 1) ";" (+ ((sc :cursor) :column) 1) "H" esc "s"))))))
+               
        
     
 

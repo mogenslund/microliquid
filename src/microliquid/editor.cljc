@@ -62,7 +62,7 @@
   "Checks if the functions takes exactly
   one argument."
   [fun]
-  true)
+  false)
 
 (defn previous-buffer
   []
