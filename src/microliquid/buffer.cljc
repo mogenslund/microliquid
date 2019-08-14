@@ -1,10 +1,10 @@
 (ns microliquid.buffer
-  (:require [microliquid.slider :refer :all]))
+  (:require [microliquid.slider :as s]))
 
 (defn buffer
   [name]
   {::name name
-   ::slider (slider "")
+   ::slider (s/slider "")
    ::highlighter nil
    ::keymap {}})
 

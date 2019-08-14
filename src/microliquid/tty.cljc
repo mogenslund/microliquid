@@ -5,6 +5,7 @@
 
 (def esc "\033[")
 
+; https://github.com/mogenslund/liquidjs/blob/master/src/dk/salza/liq/adapters/tty.cljs
 (defn cmd
   [& args]
   (.waitFor (.exec (Runtime/getRuntime) (into-array args))))

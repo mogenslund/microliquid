@@ -62,11 +62,7 @@
   "Checks if the functions takes exactly
   one argument."
   [fun]
-  (when fun
-    (let [ar (map #(alength (.getParameterTypes %))
-            (.getDeclaredMethods (class fun)))]
-    (or (= ar '(1))
-        (= ar '(1 1))))))
+  true)
 
 (defn previous-buffer
   []
