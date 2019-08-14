@@ -8,17 +8,23 @@
 ; https://github.com/mogenslund/liquidjs/blob/master/src/dk/salza/liq/adapters/tty.cljs
 (defn cmd
   [& args]
-  (.waitFor (.exec (Runtime/getRuntime) (into-array args))))
+  #?(:clj (.waitFor (.exec (Runtime/getRuntime) (into-array args)))
+     :cljs (do)))
 
 (defn- tty-print
   [& args]
-  (.print (System/out) (str/join "" args)))
+  #?(:clj (.print (System/out) (str/join "" args))
+     :cljs (js/process.stdout.write (str/join "" args))))
 
 (defn set-raw-mode
   []
-  (cmd "/bin/sh" "-c" "stty -echo raw </dev/tty")
-  (tty-print esc "0;37m" esc "2J")
-  (tty-print esc "?7l"))  ; disable line wrap
+  #?(:clj (do (cmd "/bin/sh" "-c" "stty -echo raw </dev/tty")
+              (tty-print esc "0;37m" esc "2J")
+              (tty-print esc "?7l"))  ; disable line wrap
+     :cljs (let [readline (js/require "readline")]
+             (.emitKeypressEvents readline process.stdin
+               (js/process.stdin.setRawMode true)))))
+
 
 (defn set-line-mode
   []
@@ -40,23 +46,28 @@
 (defn input-handler
   "Loop inside i thread waiting for user input"
   []
-  (future
-    (let [r (java.io.BufferedReader. *in*)]
-      (loop [input (.read r)]
-        (when (not= input 27)
-          (editor/handle-input (raw2keyword input))
-          (let [sc (renderer/render-screen)]
-            (tty-print esc "0;37m" esc "2J")
-            (tty-print esc 0 ";" 0 "H" esc "s")
-            (doseq [line (sc :lines)]
-              (doseq [ch line]
-                (tty-print ch))
-              (tty-print "\r\n"))
-            (tty-print esc (+ ((sc :cursor) :row) 1) ";" (+ ((sc :cursor) :column) 1) "H" esc "s"))
-          (recur (.read r)))))
-    (set-line-mode)
-    (Thread/sleep 500)
-    (System/exit 0)))
+  #?(:clj (future
+            (let [r (java.io.BufferedReader. *in*)]
+              (loop [input (.read r)]
+                (when (not= input 27)
+                  (editor/handle-input (raw2keyword input))
+                  (let [sc (renderer/render-screen)]
+                    (tty-print esc "0;37m" esc "2J")
+                    (tty-print esc 0 ";" 0 "H" esc "s")
+                    (doseq [line (sc :lines)]
+                      (doseq [ch line]
+                        (tty-print ch))
+                      (tty-print "\r\n"))
+                    (tty-print esc (+ ((sc :cursor) :row) 1) ";" (+ ((sc :cursor) :column) 1) "H" esc "s"))
+                  (recur (.read r)))))
+            (set-line-mode
+             (do (Thread/sleep 500) (System/exit 0))))
+     :cljs (js/process.stdin.on "keypress"
+             (fn [chunk key]
+               (when (= js/key.name "0") (js/process.exit))
+               (editor/handle-input (keyword js/key.name))))))
+       
+    
 
 (defn init
   []
