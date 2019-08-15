@@ -1,0 +1,12 @@
+;; shadow-cljs configuration
+{:source-paths
+ ["src"]
+
+ :dependencies
+ []
+
+ :builds {:app {:target :node-script
+                :output-dir "public/js"
+                :output-to "target/main.js"
+                :asset-path "/js"
+                :main microliquid.core/-main}}}
