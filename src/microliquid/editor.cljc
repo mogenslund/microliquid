@@ -58,12 +58,6 @@
   [keymap]
   (doto-buffer buffer/set-keymap keymap))
 
-(defn- one-arg?
-  "Checks if the functions takes exactly
-  one argument."
-  [fun]
-  false)
-
 (defn previous-buffer
   []
   (switch-to-buffer (-> @editor ::buffers second ::buffer/name)))
@@ -73,8 +67,8 @@
   (let [action (or ((buffer/get-keymap (current-buffer)) ch)
                    ((@editor ::global-keymap) ch))]
     (if action
-      (if (one-arg? action)
-        (apply-to-slider action)
-        (action))
+      (if (vector? action)
+        ((first action))
+        (apply-to-slider action))
       (apply-to-slider (fn [sl] (slider/insert sl ch))))))
 

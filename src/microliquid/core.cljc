@@ -1,11 +1,11 @@
 (ns microliquid.core
-  (:require [microliquid.slider :as s]
+  (:require [microliquid.slider :as s :refer [left right]]
             [microliquid.editor :as editor]
             [microliquid.tty :as tty]))
 
 (def keymap
-  {"1" s/left
-   "2" s/right
+  {"1" left
+   "2" right
    "backspace" (fn [sl] (s/delete sl))})
 
 (defn create-buffer
